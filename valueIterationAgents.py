@@ -75,11 +75,28 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
           Compute the Q-value of action in state from the
           value function stored in self.values.
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
 
-    def computeActionFromValues(self, state):
+        Some useful mdp methods you will use:
+            mdp.getStates()
+            mdp.getPossibleActions(state)
+            mdp.getTransitionStatesAndProbs(state, action)
+            mdp.getReward(state, action, nextState)
+            mdp.isTerminal(state)
+        """
+        #Q-state -> (state, action)
+        
+        for transitions in self.mdp.getTransitionStatesAndProbs(state, action):
+            trans_state = transitions[0]
+            trans_prob = transitions[1]
+            trans_reward = self.mdp.getReward(state, action, trans_state)
+            ...
+
+
+
+
+        pass
+
+    def computeActionFromValues(self, state): #havent tested this...
         """
           The policy is the best action in the given state
           according to the values currently stored in self.values.
@@ -87,9 +104,20 @@ class ValueIterationAgent(ValueEstimationAgent):
           You may break ties any way you see fit.  Note that if
           there are no legal actions, which is the case at the
           terminal state, you should return None.
+        
+            Some useful mdp methods you will use:
+            mdp.getStates()
+            mdp.getPossibleActions(state)
+            mdp.getTransitionStatesAndProbs(state, action)
+            mdp.getReward(state, action, nextState)
+            mdp.isTerminal(state)
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        action_keys = self.values.sortedKeys()
+        poss_actions = self.mdp.getPossibleActions(state)
+        for action in action_keys:
+            if action in poss_actions:
+                return action
+        return None
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
