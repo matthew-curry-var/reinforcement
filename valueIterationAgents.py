@@ -61,7 +61,18 @@ class ValueIterationAgent(ValueEstimationAgent):
 
     def runValueIteration(self):
         # Write value iteration code here
-        "*** YOUR CODE HERE ***"
+        states = self.mdp.getStates()
+        for i in range(self.iterations):
+            for s in states:
+                q_vals = list()
+                for a in self.mdp.getPossibleActions(s):
+                    q_vals.append(self.computeQValueFromValues(s, a))
+                    self.values[s] = max(q_vals)
+                if (self.mdp.isTerminal(s)):
+                    pass
+                    #do something
+                     
+        return None
 
 
     def getValue(self, state):
@@ -71,32 +82,26 @@ class ValueIterationAgent(ValueEstimationAgent):
         return self.values[state]
 
 
-    def computeQValueFromValues(self, state, action):
+    def computeQValueFromValues(self, state, action): #NEED TO VERIFY (MOVING ON)
         """
           Compute the Q-value of action in state from the
           value function stored in self.values.
 
-        Some useful mdp methods you will use:
-            mdp.getStates()
-            mdp.getPossibleActions(state)
-            mdp.getTransitionStatesAndProbs(state, action)
-            mdp.getReward(state, action, nextState)
-            mdp.isTerminal(state)
+            #Q-state -> (state, action)
+            s' = set of all states applying action from state
+            s' = self.mdp.getTransitionStatesAndProbs(state, action)
+               = [ ((1,0), 0.25) , ((0,2), 0.33), ..]
         """
-        #Q-state -> (state, action)
-        
-        for transitions in self.mdp.getTransitionStatesAndProbs(state, action):
-            trans_state = transitions[0]
-            trans_prob = transitions[1]
-            trans_reward = self.mdp.getReward(state, action, trans_state)
-            ...
+        q_val = 0
+        for s in self.mdp.getTransitionStatesAndProbs(state, action):
+            # ((x, y), p)
+            s_prime = s[0]
+            t_prob = s[1]
+            w_reward = t_prob * (self.mdp.getReward(state, action, s_prime) + self.discount * self.values[s_prime])
+            q_val += w_reward
+        return q_val
 
-
-
-
-        pass
-
-    def computeActionFromValues(self, state): #havent tested this...
+    def computeActionFromValues(self, state): #NEED TO VERIFY (MOVING ON)
         """
           The policy is the best action in the given state
           according to the values currently stored in self.values.
@@ -104,20 +109,20 @@ class ValueIterationAgent(ValueEstimationAgent):
           You may break ties any way you see fit.  Note that if
           there are no legal actions, which is the case at the
           terminal state, you should return None.
-        
-            Some useful mdp methods you will use:
-            mdp.getStates()
-            mdp.getPossibleActions(state)
-            mdp.getTransitionStatesAndProbs(state, action)
-            mdp.getReward(state, action, nextState)
-            mdp.isTerminal(state)
         """
-        action_keys = self.values.sortedKeys()
-        poss_actions = self.mdp.getPossibleActions(state)
-        for action in action_keys:
-            if action in poss_actions:
-                return action
-        return None
+
+        if self.mdp.isTerminal(state):
+            return None
+
+        actions = self.mdp.getPossibleActions(state) # N,S,W,E,Exit
+        holderList = []
+        
+        for action in actions:
+            p_states = self.mdp.getTransitionStatesAndProbs(state, action) # [(nextState, prop),(),()]
+            for neighborState in p_states: 
+                holderList.append((self.values[neighborState[0]], action))
+
+        return max(holderList)[1]
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
