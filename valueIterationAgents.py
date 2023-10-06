@@ -57,21 +57,25 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.discount = discount
         self.iterations = iterations
         self.values = util.Counter() # A Counter is a dict with default 0
+        self.oldValues = util.Counter()
         self.runValueIteration()
 
     def runValueIteration(self):
         # Write value iteration code here
-        states = self.mdp.getStates()
         for i in range(self.iterations):
-            for s in states:
-                q_vals = list()
-                for a in self.mdp.getPossibleActions(s):
-                    q_vals.append(self.computeQValueFromValues(s, a))
-                    self.values[s] = max(q_vals)
-                if (self.mdp.isTerminal(s)):
-                    pass
-                    #do something
-                     
+            for state in self.mdp.getStates():
+                if i == 0:
+                    self.oldValues[state] = 0
+                    self.values[state] = 0
+                qHolder = []
+                if self.mdp.isTerminal(state) == False:
+                    for action in self.mdp.getPossibleActions(state):
+                        qHolder.append(self.computeQValueFromValues(state, action))   
+                        maxVal = max(qHolder)
+                    self.oldValues[state] = maxVal
+
+            for x in self.oldValues:
+                self.values[x] = self.oldValues[x]
         return None
 
 
@@ -82,7 +86,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         return self.values[state]
 
 
-    def computeQValueFromValues(self, state, action): #NEED TO VERIFY (MOVING ON)
+    def computeQValueFromValues(self, state, action):
         """
           Compute the Q-value of action in state from the
           value function stored in self.values.
@@ -93,15 +97,16 @@ class ValueIterationAgent(ValueEstimationAgent):
                = [ ((1,0), 0.25) , ((0,2), 0.33), ..]
         """
         q_val = 0
-        for s in self.mdp.getTransitionStatesAndProbs(state, action):
-            # ((x, y), p)
-            s_prime = s[0]
-            t_prob = s[1]
-            w_reward = t_prob * (self.mdp.getReward(state, action, s_prime) + self.discount * self.values[s_prime])
-            q_val += w_reward
-        return q_val
+        if self.mdp.isTerminal(state):
+            return q_val
+        else:
+            for s in self.mdp.getTransitionStatesAndProbs(state, action):
+                s_prime = s[0] #(x,y)
+                s_prob = s[1] #0 < s_prob < 1
+                q_val += s_prob * (self.mdp.getReward(state, action, s_prime) + self.discount * self.values[s_prime])
+            return q_val
 
-    def computeActionFromValues(self, state): #NEED TO VERIFY (MOVING ON)
+    def computeActionFromValues(self, state):
         """
           The policy is the best action in the given state
           according to the values currently stored in self.values.
@@ -110,19 +115,18 @@ class ValueIterationAgent(ValueEstimationAgent):
           there are no legal actions, which is the case at the
           terminal state, you should return None.
         """
-
-        if self.mdp.isTerminal(state):
+        if (self.mdp.isTerminal(state)):
             return None
+        else:
+            action_vals = list()
+            for action in self.mdp.getPossibleActions(state):
+                action_vals.append((self.computeQValueFromValues(state, action), action))
 
-        actions = self.mdp.getPossibleActions(state) # N,S,W,E,Exit
-        holderList = []
-        
-        for action in actions:
-            p_states = self.mdp.getTransitionStatesAndProbs(state, action) # [(nextState, prop),(),()]
-            for neighborState in p_states: 
-                holderList.append((self.values[neighborState[0]], action))
+            #print("actions and q vals: ", action_vals)
+            #print("best action: ", max(action_vals)[0])
+            
+            return max(action_vals)[1]
 
-        return max(holderList)[1]
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
