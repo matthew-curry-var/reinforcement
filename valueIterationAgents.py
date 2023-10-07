@@ -157,5 +157,64 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
         ValueIterationAgent.__init__(self, mdp, discount, iterations)
 
     def runValueIteration(self):
-        "*** YOUR CODE HERE ***"
+        """
+            Some useful mdp methods you will use:
+              mdp.getStates()
+              mdp.getPossibleActions(state)
+              mdp.getTransitionStatesAndProbs(state, action)
+              mdp.getReward(state, action, nextState)
+              mdp.isTerminal(state)
+        """
+        #Compute predecessors of all states
+        predecessors = dict()
+        for state in self.mdp.getStates():
+            actions = self.mdp.getPossibleActions(state)
+            for a in actions:
+                tran = self.mdp.getTransitionStatesAndProbs(state, a)
+                for t in tran: #tran = [((x,y), p'), ((a,b), p''), ...]
+                    s = t[0] #s = (x,y)
+                    print("s: ", s)
+                    print("state: ", state)
+                    print("equaL?: ", s == state)
+                    if not s in predecessors.keys():
+                        predecessors[s] = [state]
+                    elif s != state:
+                        predecessors[s].append(state)
+                        predecessors[s] = list(set(predecessors[s]))
+
+
+
+                        
+   
+
+        print("PREDECESSORS")
+        print(predecessors)
+
+        #Init empty PQ
+
+
+        #For each non-terminal state:
+
+
+            #Find diff := abs(current value of s - highest Q-val across all possible actions from s)
+
+
+            #Push s into PQ with priority = -diff
+
+
+        #For each iteration in range(self.iterations):
+
+            #If PQ empty -> terminate
+
+            #Pop a state s off PQ
+
+            #Update value of s (if not terminal) in self.values
+
+            #For each predecessor p of s:
+
+                #Find diff := abs(current value of p in self.values - highest Q-val across all possible actions from p)
+
+                #If diff > theta, push p into PQ w/ priority = -diff
+
+
 
